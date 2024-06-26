@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.facebook.CallbackManager;
@@ -16,6 +17,22 @@ import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.Arrays;
 
@@ -29,6 +46,11 @@ public class LoginActivity extends AppCompatActivity {
     private EditText edtPassword;
     private Button btnLogin;
     private TextView btnSignUp;
+    private TextView btnForgotPassword;
+    private FirebaseAuth firebaseAuth;
+    private GoogleSignInOptions gso;
+    private GoogleSignInClient gsc;
+    private DatabaseReference databaseReference;
 
 
     private CallbackManager callbackManager;
@@ -46,16 +68,52 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1000) {
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            try {
+                GoogleSignInAccount account = task.getResult(ApiException.class);
+                if (account != null) {
+                    saveUserToDatabase(account.getId(), account.getEmail());
+                    startActivity(new Intent(LoginActivity.this, HomeActivity.class));
+                    finish();
+                }
+            } catch (ApiException e) {
+                Toast.makeText(LoginActivity.this, "Login With Google Failed", Toast.LENGTH_SHORT).show();
+            }
+        }
         callbackManager.onActivityResult(requestCode, resultCode, data);
     }
 
     private void initAction() {
         imgFb.setOnClickListener(this::onClickLoginFb);
-        imgGg.setOnClickListener(v -> {
-            System.out.println("Google");
-        });
+        imgGg.setOnClickListener(this::onClickLoginGg);
         btnLogin.setOnClickListener(this::onClickLogin);
         btnSignUp.setOnClickListener(this::onClickSignUp);
+        btnForgotPassword.setOnClickListener(this::onClickForgotPassword);
+    }
+
+    private void onClickLoginGg(View view) {
+        Intent signInIntent = gsc.getSignInIntent();
+        startActivityForResult(signInIntent, 1000);
+    }
+
+    private void onClickForgotPassword(View view) {
+        final EditText resetEmail = new EditText(view.getContext());
+        final androidx.appcompat.app.AlertDialog.Builder passwordResetDialog = new androidx.appcompat.app.AlertDialog.Builder(view.getContext());
+        passwordResetDialog.setTitle("Reset Password ?");
+        passwordResetDialog.setMessage("Enter your email to receive reset link");
+        passwordResetDialog.setView(resetEmail);
+        passwordResetDialog.setPositiveButton("Send", (dialog, which) -> {
+            String mail = resetEmail.getText().toString();
+            firebaseAuth.sendPasswordResetEmail(mail).addOnSuccessListener(unused -> {
+                Toast.makeText(LoginActivity.this, "Reset link sent to your email", Toast.LENGTH_SHORT).show();
+            }).addOnFailureListener(e -> {
+                Toast.makeText(LoginActivity.this, "Error ! Reset link is not sent to your email" + e.getMessage(), Toast.LENGTH_SHORT).show();
+            });
+        });
+        passwordResetDialog.setNegativeButton("Close", (dialog, which) -> {
+        });
+        passwordResetDialog.create().show();
     }
 
     private void onClickSignUp(View view) {
@@ -77,13 +135,25 @@ public class LoginActivity extends AppCompatActivity {
             edtPassword.requestFocus();
             return;
         }
-//        Users u = dbContext.authorized(email, password);
-//        if (u != null) {
-//            startActivity(new Intent(LoginActivity.this, HomeActivity.class));
-//            finish();
-//        } else {
-//            Toast.makeText(this, "Invalid email or password", Toast.LENGTH_SHORT).show();
-//        }
+
+        firebaseAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                if (task.isSuccessful()) {
+                    FirebaseUser fu = firebaseAuth.getCurrentUser();
+                    assert fu != null;
+                    if (fu.isEmailVerified()) {
+                        startActivity(new Intent(LoginActivity.this, HomeActivity.class));
+                        finish();
+                    } else {
+                        Toast.makeText(LoginActivity.this, "Please verify your email", Toast.LENGTH_SHORT).show();
+                    }
+
+                } else {
+                    Toast.makeText(LoginActivity.this, "Invalid email or password", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
     private void onClickLoginFb(View view) {
@@ -97,10 +167,18 @@ public class LoginActivity extends AppCompatActivity {
         edtPassword = findViewById(R.id.password);
         btnLogin = findViewById(R.id.login_button);
         btnSignUp = findViewById(R.id.signup_link);
+        btnForgotPassword = findViewById(R.id.forgot_password_link);
+        firebaseAuth = FirebaseAuth.getInstance();
+        gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build();
+        gsc = GoogleSignIn.getClient(this, gso);
+        databaseReference = FirebaseDatabase.getInstance().getReference("users");
         LoginManager.getInstance().registerCallback(callbackManager,
                 new FacebookCallback<LoginResult>() {
                     @Override
                     public void onSuccess(LoginResult loginResult) {
+                        FirebaseUser fu = firebaseAuth.getCurrentUser();
+                        assert fu != null;
+                        saveUserToDatabase(fu.getUid(), fu.getEmail());
                         startActivity(new Intent(LoginActivity.this, HomeActivity.class));
                         finish();
                     }
@@ -115,5 +193,32 @@ public class LoginActivity extends AppCompatActivity {
                         // Handle error
                     }
                 });
+    }
+    private void saveUserToDatabase(String uid, String email) {
+        Query query = databaseReference.orderByChild("email").equalTo(email);
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    // Email already exists, do not insert again
+                    Toast.makeText(LoginActivity.this, "Email already exists in the database", Toast.LENGTH_SHORT).show();
+                } else {
+                    // Email does not exist, proceed to insert
+                    Users user = new Users(uid, email);
+                    databaseReference.child(uid).setValue(user).addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            Toast.makeText(LoginActivity.this, "User data saved", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(LoginActivity.this, "Failed to save user data", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(LoginActivity.this, "Database error: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }
