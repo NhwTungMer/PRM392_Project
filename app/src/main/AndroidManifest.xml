@@ -19,6 +19,16 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PRM_Project"
         tools:targetApi="31">
+
+        <activity
+            android:name=".CaloriesAcitivity"
+            android:exported="false" />
+        <activity
+            android:name=".HistoryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".LoginActivity"
+            android:exported="false" />
         <activity
             android:name=".VerifyRegister"
             android:exported="false" />
@@ -29,8 +39,9 @@
             android:name=".HomeActivity"
             android:exported="false" />
         <activity
-            android:name=".LoginActivity"
-            android:exported="true">
+            android:name=".BmiActivity"
+            android:exported="true"
+            tools:ignore="DuplicateActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
