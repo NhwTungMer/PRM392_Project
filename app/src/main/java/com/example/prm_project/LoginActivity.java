@@ -73,7 +73,7 @@ public class LoginActivity extends AppCompatActivity {
             try {
                 GoogleSignInAccount account = task.getResult(ApiException.class);
                 if (account != null) {
-                    saveUserToDatabase(account.getId(), account.getEmail());
+                    saveUserToDatabase(account.getEmail(), account.getDisplayName());
                     startActivity(new Intent(LoginActivity.this, HomeActivity.class));
                     finish();
                 }
@@ -178,7 +178,7 @@ public class LoginActivity extends AppCompatActivity {
                     public void onSuccess(LoginResult loginResult) {
                         FirebaseUser fu = firebaseAuth.getCurrentUser();
                         assert fu != null;
-                        saveUserToDatabase(fu.getUid(), fu.getEmail());
+                        saveUserToDatabase(fu.getEmail(), fu.getDisplayName());
                         startActivity(new Intent(LoginActivity.this, HomeActivity.class));
                         finish();
                     }
@@ -194,7 +194,7 @@ public class LoginActivity extends AppCompatActivity {
                     }
                 });
     }
-    private void saveUserToDatabase(String uid, String email) {
+    private void saveUserToDatabase(String email, String name) {
         Query query = databaseReference.orderByChild("email").equalTo(email);
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -204,8 +204,8 @@ public class LoginActivity extends AppCompatActivity {
                     Toast.makeText(LoginActivity.this, "Email already exists in the database", Toast.LENGTH_SHORT).show();
                 } else {
                     // Email does not exist, proceed to insert
-                    Users user = new Users(uid, email);
-                    databaseReference.child(uid).setValue(user).addOnCompleteListener(task -> {
+                    Users user = new Users(name, email);
+                    databaseReference.child("users").setValue(user).addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
                             Toast.makeText(LoginActivity.this, "User data saved", Toast.LENGTH_SHORT).show();
                         } else {
