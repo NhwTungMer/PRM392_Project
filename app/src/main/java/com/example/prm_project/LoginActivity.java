@@ -73,7 +73,7 @@ public class LoginActivity extends AppCompatActivity {
             try {
                 GoogleSignInAccount account = task.getResult(ApiException.class);
                 if (account != null) {
-                    saveUserToDatabase(account.getEmail(), account.getDisplayName());
+                    //saveUserToDatabase(account.getEmail(), account.getDisplayName());
                     startActivity(new Intent(LoginActivity.this, HomeActivity.class));
                     finish();
                 }
@@ -178,7 +178,7 @@ public class LoginActivity extends AppCompatActivity {
                     public void onSuccess(LoginResult loginResult) {
                         FirebaseUser fu = firebaseAuth.getCurrentUser();
                         assert fu != null;
-                        saveUserToDatabase(fu.getEmail(), fu.getDisplayName());
+                        //saveUserToDatabase(fu.getEmail(), fu.getDisplayName());
                         startActivity(new Intent(LoginActivity.this, HomeActivity.class));
                         finish();
                     }
