@@ -13,8 +13,11 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import model.Goal;
 
@@ -23,6 +26,7 @@ public class GoalActivity extends AppCompatActivity {
     private Button btnSave;
     private FirebaseAuth firebaseAuth;
     private DatabaseReference databaseReference;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,10 +36,10 @@ public class GoalActivity extends AppCompatActivity {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
-
         });
         bindingView();
         bindingAction();
+        loadGoalData();
     }
 
     private void bindingAction() {
@@ -87,5 +91,32 @@ public class GoalActivity extends AppCompatActivity {
 
         firebaseAuth = FirebaseAuth.getInstance();
         databaseReference = FirebaseDatabase.getInstance().getReference("goals");
+    }
+
+    private void loadGoalData() {
+        String userId = firebaseAuth.getCurrentUser().getUid();
+        databaseReference.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    Goal goal = dataSnapshot.getValue(Goal.class);
+                    if (goal != null) {
+                        edtCurrentWeight.setText(goal.getCurrentWeight());
+                        edtDesiredWeight.setText(goal.getDesiredWeight());
+                        edtDuration.setText(goal.getDuration());
+                    }
+                } else {
+                    edtCurrentWeight.setText("");
+                    edtDesiredWeight.setText("");
+                    edtDuration.setText("");
+                    Toast.makeText(GoalActivity.this, "No goal data found", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Toast.makeText(GoalActivity.this, "Failed to load goal data: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }
