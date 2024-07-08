@@ -12,9 +12,12 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -24,15 +27,20 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.SignInMethodQueryResult;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+
+import org.json.JSONObject;
 
 import java.util.Arrays;
 
@@ -51,8 +59,6 @@ public class LoginActivity extends AppCompatActivity {
     private GoogleSignInOptions gso;
     private GoogleSignInClient gsc;
     private DatabaseReference databaseReference;
-
-
     private CallbackManager callbackManager;
 
     @Override
@@ -73,7 +79,7 @@ public class LoginActivity extends AppCompatActivity {
             try {
                 GoogleSignInAccount account = task.getResult(ApiException.class);
                 if (account != null) {
-                    //saveUserToDatabase(account.getEmail(), account.getDisplayName());
+                    saveUserToDatabase(account.getEmail(), account.getDisplayName(), "google");
                     startActivity(new Intent(LoginActivity.this, HomeActivity.class));
                     finish();
                 }
@@ -172,15 +178,35 @@ public class LoginActivity extends AppCompatActivity {
         gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build();
         gsc = GoogleSignIn.getClient(this, gso);
         databaseReference = FirebaseDatabase.getInstance().getReference("users");
+
         LoginManager.getInstance().registerCallback(callbackManager,
                 new FacebookCallback<LoginResult>() {
                     @Override
                     public void onSuccess(LoginResult loginResult) {
                         FirebaseUser fu = firebaseAuth.getCurrentUser();
                         assert fu != null;
-                        //saveUserToDatabase(fu.getEmail(), fu.getDisplayName());
-                        startActivity(new Intent(LoginActivity.this, HomeActivity.class));
-                        finish();
+                        AccessToken accessToken = AccessToken.getCurrentAccessToken();
+                        GraphRequest request = GraphRequest.newMeRequest(
+                                accessToken,
+                                new GraphRequest.GraphJSONObjectCallback() {
+                                    @Override
+                                    public void onCompleted(JSONObject object, GraphResponse response) {
+                                        String email = fu.getEmail();
+                                        String name = object.optString("name");
+
+                                        assert email != null;
+                                        if (!email.isEmpty()) {
+                                            linkFacebookAccount(email, name);
+                                        } else {
+                                            Toast.makeText(LoginActivity.this, "Failed to retrieve email from Facebook", Toast.LENGTH_SHORT).show();
+                                        }
+                                    }
+                                });
+
+                        Bundle parameters = new Bundle();
+                        parameters.putString("fields", "id,name,email");
+                        request.setParameters(parameters);
+                        request.executeAsync();
                     }
 
                     @Override
@@ -194,25 +220,69 @@ public class LoginActivity extends AppCompatActivity {
                     }
                 });
     }
-    private void saveUserToDatabase(String email, String name) {
-        Query query = databaseReference.orderByChild("email").equalTo(email);
-        query.addListenerForSingleValueEvent(new ValueEventListener() {
+
+    private void linkFacebookAccount(String email, String name) {
+        firebaseAuth.fetchSignInMethodsForEmail(email).addOnCompleteListener(new OnCompleteListener<SignInMethodQueryResult>() {
+            @Override
+            public void onComplete(@NonNull Task<SignInMethodQueryResult> task) {
+                if (task.isSuccessful()) {
+                    SignInMethodQueryResult result = task.getResult();
+                    if (result != null && result.getSignInMethods() != null && !result.getSignInMethods().isEmpty()) {
+                        // Email already exists, link the account
+                        AuthCredential credential = EmailAuthProvider.getCredential(email, "user-password");
+                        firebaseAuth.getCurrentUser().linkWithCredential(credential).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                            @Override
+                            public void onComplete(@NonNull Task<AuthResult> task) {
+                                if (task.isSuccessful()) {
+                                    saveUserToDatabase(email, name, "facebook");
+                                    startActivity(new Intent(LoginActivity.this, HomeActivity.class));
+                                    finish();
+                                } else {
+                                    Toast.makeText(LoginActivity.this, "Failed to link Facebook account", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        });
+                    } else {
+                        // Email does not exist, create a new account
+                        saveUserToDatabase(email, name, "facebook");
+                        startActivity(new Intent(LoginActivity.this, HomeActivity.class));
+                        finish();
+                    }
+                } else {
+                    Toast.makeText(LoginActivity.this, "Failed to check email existence", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    private void saveUserToDatabase(String email, String name, String provider) {
+        String userId = firebaseAuth.getCurrentUser().getUid();
+
+        // Lấy dữ liệu hiện tại của người dùng từ cơ sở dữ liệu
+        databaseReference.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                Users user;
                 if (dataSnapshot.exists()) {
-                    // Email already exists, do not insert again
-                    Toast.makeText(LoginActivity.this, "Email already exists in the database", Toast.LENGTH_SHORT).show();
+                    // Nếu người dùng đã tồn tại, lấy thông tin hiện tại
+                    user = dataSnapshot.getValue(Users.class);
+                    // Nối thêm thông tin loginType mới vào loginType cũ
+                    String currentLoginType = user.getLoginType();
+                    String newLoginType = currentLoginType + (currentLoginType.isEmpty() ? "" : ",") + provider;
+                    user.setLoginType(newLoginType);
                 } else {
-                    // Email does not exist, proceed to insert
-                    Users user = new Users(name, email);
-                    databaseReference.child("users").setValue(user).addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            Toast.makeText(LoginActivity.this, "User data saved", Toast.LENGTH_SHORT).show();
-                        } else {
-                            Toast.makeText(LoginActivity.this, "Failed to save user data", Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                    // Nếu người dùng chưa tồn tại, tạo mới
+                    user = new Users(name, "", email, provider);
                 }
+
+                // Cập nhật thông tin người dùng vào cơ sở dữ liệu
+                databaseReference.child(userId).setValue(user).addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Toast.makeText(LoginActivity.this, "User data saved", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(LoginActivity.this, "Failed to save user data", Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
 
             @Override
@@ -221,4 +291,5 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
     }
+
 }
