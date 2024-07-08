@@ -142,6 +142,7 @@ public class BmiActivity extends AppCompatActivity {
     }
 
     private String getBmiCategory(double bmi) {
+
         if (bmi < 16) {
             return "Gầy độ III";
         } else if (bmi >= 16 && bmi < 17) {
