@@ -10,6 +10,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.facebook.AccessToken;
@@ -43,6 +44,8 @@ import com.google.firebase.database.ValueEventListener;
 import org.json.JSONObject;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import model.Users;
 
@@ -105,7 +108,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void onClickForgotPassword(View view) {
         final EditText resetEmail = new EditText(view.getContext());
-        final androidx.appcompat.app.AlertDialog.Builder passwordResetDialog = new androidx.appcompat.app.AlertDialog.Builder(view.getContext());
+        final AlertDialog.Builder passwordResetDialog = new AlertDialog.Builder(view.getContext());
         passwordResetDialog.setTitle("Reset Password ?");
         passwordResetDialog.setMessage("Enter your email to receive reset link");
         passwordResetDialog.setView(resetEmail);
@@ -149,7 +152,7 @@ public class LoginActivity extends AppCompatActivity {
                     FirebaseUser fu = firebaseAuth.getCurrentUser();
                     assert fu != null;
                     if (fu.isEmailVerified()) {
-                        startActivity(new Intent(LoginActivity.this, HomeActivity.class));
+                        startActivity(new Intent(LoginActivity.this, UserProfileActivity.class));
                         finish();
                     } else {
                         Toast.makeText(LoginActivity.this, "Please verify your email", Toast.LENGTH_SHORT).show();
@@ -264,12 +267,18 @@ public class LoginActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 Users user;
                 if (dataSnapshot.exists()) {
-                    // Nếu người dùng đã tồn tại, lấy thông tin hiện tại
                     user = dataSnapshot.getValue(Users.class);
-                    // Nối thêm thông tin loginType mới vào loginType cũ
-                    String currentLoginType = user.getLoginType();
-                    String newLoginType = currentLoginType + (currentLoginType.isEmpty() ? "" : ",") + provider;
-                    user.setLoginType(newLoginType);
+                    if (user != null) {
+                        String currentLoginTypes = user.getLoginType();
+                        Set<String> loginTypeSet = new HashSet<>(Arrays.asList(currentLoginTypes.split(",")));
+
+                        if (!loginTypeSet.contains(provider)) {
+                            loginTypeSet.add(provider);
+                        }
+
+                        String newLoginTypes = String.join(",", loginTypeSet);
+                        user.setLoginType(newLoginTypes);
+                    }
                 } else {
                     // Nếu người dùng chưa tồn tại, tạo mới
                     user = new Users(name, "", email, provider);
