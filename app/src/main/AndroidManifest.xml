@@ -19,7 +19,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PRM_Project"
         tools:targetApi="31">
-
+        <activity
+            android:name=".GoalActivity"
+            android:exported="false" />
+        <activity
+            android:name=".UserProfileActivity"
+            android:exported="false" />
         <activity
             android:name=".CaloriesAcitivity"
             android:exported="false" />
@@ -28,17 +33,15 @@
             android:exported="false" />
         <activity
             android:name=".LoginActivity"
-            android:exported="true" >
-        <intent-filter>
-            <action android:name="android.intent.action.MAIN" />
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
-            <category android:name="android.intent.category.LAUNCHER" />
-        </intent-filter>
-        </activity>
-
-<!--        <activity-->
-<!--            android:name=".VerifyRegister"-->
-<!--            android:exported="false" />-->
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity> <!-- <activity -->
+        <!-- android:name=".VerifyRegister" -->
+        <!-- android:exported="false" /> -->
         <activity
             android:name=".RegisterActivity"
             android:exported="false" />
@@ -48,9 +51,7 @@
         <activity
             android:name=".BmiActivity"
             android:exported="true"
-            tools:ignore="DuplicateActivity">
-
-        </activity>
+            tools:ignore="DuplicateActivity" />
 
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
