@@ -1,17 +1,230 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".HomeActivity">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical">
+
+
+
+    <View
+        android:id="@+id/top_view"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:background="@drawable/bg_view"/>
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:columnCount="2"
+        android:rowCount="4"
+        android:layout_marginLeft="24dp"
+        android:layout_marginRight="24dp"
+        android:layout_below="@+id/top_view"
+        android:layout_marginTop="-80dp">
+        <androidx.cardview.widget.CardView
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            app:cardCornerRadius="15dp"
+            app:cardElevation="12dp"
+            android:layout_columnWeight="1"
+            android:layout_rowWeight="1"
+            android:layout_row="1"
+            android:layout_column="0"
+            android:layout_margin="12dp">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center">
+                <ImageView
+                    android:id="@+id/home_button"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:src="@drawable/baseline_home_24"
+                    android:layout_gravity="center_horizontal"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Home"
+                    android:layout_gravity="center_horizontal"
+                    android:textSize="18dp"
+                    android:textStyle="bold"
+                    android:textColor="@color/theme_blue"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+        <androidx.cardview.widget.CardView
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            app:cardCornerRadius="15dp"
+            app:cardElevation="12dp"
+            android:layout_columnWeight="1"
+            android:layout_rowWeight="1"
+            android:layout_row="1"
+            android:layout_column="1"
+            android:layout_margin="12dp">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center">
+                <ImageView
+                    android:id="@+id/addFood_button"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:src="@drawable/baseline_fastfood_24"
+                    android:layout_gravity="center_horizontal"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Add Food"
+                    android:layout_gravity="center_horizontal"
+                    android:textSize="18dp"
+                    android:textStyle="bold"
+                    android:textColor="@color/theme_blue"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+        <androidx.cardview.widget.CardView
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            app:cardCornerRadius="15dp"
+            app:cardElevation="12dp"
+            android:layout_columnWeight="1"
+            android:layout_rowWeight="1"
+            android:layout_row="2"
+            android:layout_column="0"
+            android:layout_margin="12dp">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center">
+                <ImageView
+                    android:id="@+id/calculateBmi_button"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:src="@drawable/baseline_calculate_24"
+                    android:layout_gravity="center_horizontal"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Calculate BMI"
+                    android:layout_gravity="center_horizontal"
+                    android:textSize="18dp"
+                    android:textStyle="bold"
+                    android:textColor="@color/theme_blue"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+        <androidx.cardview.widget.CardView
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            app:cardCornerRadius="15dp"
+            app:cardElevation="12dp"
+            android:layout_columnWeight="1"
+            android:layout_rowWeight="1"
+            android:layout_row="2"
+            android:layout_column="1"
+            android:layout_margin="12dp">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center">
+                <ImageView
+                    android:id="@+id/history_button"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:src="@drawable/baseline_history_24"
+                    android:layout_gravity="center_horizontal"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="History"
+                    android:layout_gravity="center_horizontal"
+                    android:textSize="18dp"
+                    android:textStyle="bold"
+                    android:textColor="@color/theme_blue"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+        <androidx.cardview.widget.CardView
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            app:cardCornerRadius="15dp"
+            app:cardElevation="12dp"
+            android:layout_columnWeight="1"
+            android:layout_rowWeight="1"
+            android:layout_row="3"
+            android:layout_column="0"
+            android:layout_margin="12dp">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center">
+                <ImageView
+                    android:id="@+id/recipe_button"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:src="@drawable/baseline_food_bank_24"
+                    android:layout_gravity="center_horizontal"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Recipe"
+                    android:layout_gravity="center_horizontal"
+                    android:textSize="18dp"
+                    android:textStyle="bold"
+                    android:textColor="@color/theme_blue"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+        <androidx.cardview.widget.CardView
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            app:cardCornerRadius="15dp"
+            app:cardElevation="12dp"
+            android:layout_columnWeight="1"
+            android:layout_rowWeight="1"
+            android:layout_row="3"
+            android:layout_column="1"
+            android:layout_margin="12dp">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center">
+                <ImageView
+                    android:id="@+id/profile_button"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:src="@drawable/baseline_person_24"
+                    android:layout_gravity="center_horizontal"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Profile"
+                    android:layout_gravity="center_horizontal"
+                    android:textSize="18dp"
+                    android:textStyle="bold"
+                    android:textColor="@color/theme_blue"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+    </GridLayout>
+
+
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/BornToFit"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="TextView"
-        tools:layout_editor_absoluteX="156dp"
-        tools:layout_editor_absoluteY="223dp" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+        android:text="Born To Fit"
+        android:textColor="@color/white"
+        android:textSize="40dp"
+        android:textStyle="bold"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="30dp"/>
+
+</RelativeLayout>
+
+
+
+
+
