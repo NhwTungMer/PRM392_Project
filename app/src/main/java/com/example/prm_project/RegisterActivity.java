@@ -108,7 +108,7 @@ public class RegisterActivity extends AppCompatActivity {
                                         public void onComplete(@NonNull Task<Void> task) {
                                             Toast.makeText(RegisterActivity.this, "Verification email sent to " + u.getEmail(), Toast.LENGTH_SHORT).show();
 
-                                            Users user = new Users(username, finalEmail);
+                                            Users user = new Users(username, password, finalEmail, "user_regist");
                                             myRef.child(u.getUid()).setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
                                                 @Override
                                                 public void onComplete(@NonNull Task<Void> task) {
