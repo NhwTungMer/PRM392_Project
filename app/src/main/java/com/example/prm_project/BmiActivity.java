@@ -45,10 +45,10 @@ public class BmiActivity extends AppCompatActivity {
         etWeight = findViewById(R.id.etWeight);
         etHeight = findViewById(R.id.etHeight);
         btnCalculate = findViewById(R.id.btnCalculate);
-        btnHistory = findViewById(R.id.btnHistory);
+
         tvResult = findViewById(R.id.tvResult);
         tvBmiCategory = findViewById(R.id.tvBmiCategory);
-        btnViewCalories = findViewById(R.id.btnViewCalories);
+
         // Set welcome text
         tvWelcome.setText("Welcome to the BMI Calculator!");
 
@@ -60,19 +60,7 @@ public class BmiActivity extends AppCompatActivity {
             }
         });
 
-        // Set click listener for the History button
-        btnHistory.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                viewHistory();
-            }
-        });
-        btnViewCalories.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                viewCalories1();
-            }
-        });
+
 
     }
 
@@ -103,7 +91,7 @@ public class BmiActivity extends AppCompatActivity {
                 if (count < 10) {
                     calculateBmi();
                 } else {
-                    Toast.makeText(BmiActivity.this, "You can only calculate BMI 4 times a month.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(BmiActivity.this, "You can only calculate BMI 10 times a month.", Toast.LENGTH_LONG).show();
                 }
             }
 
@@ -142,6 +130,7 @@ public class BmiActivity extends AppCompatActivity {
     }
 
     private String getBmiCategory(double bmi) {
+
         if (bmi < 16) {
             return "Gầy độ III";
         } else if (bmi >= 16 && bmi < 17) {
@@ -182,14 +171,6 @@ public class BmiActivity extends AppCompatActivity {
     }
 
 
-    private void viewHistory() {
-        Intent intent = new Intent(BmiActivity.this, HistoryActivity.class);
-        startActivity(intent);
-    }
 
-    private void viewCalories1() {
-        Intent intent = new Intent(BmiActivity.this, CaloriesAcitivity.class);
-        startActivity(intent);
-    }
 
 }
