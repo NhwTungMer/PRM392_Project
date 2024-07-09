@@ -83,8 +83,8 @@ public class LoginActivity extends AppCompatActivity {
                 GoogleSignInAccount account = task.getResult(ApiException.class);
                 if (account != null) {
                     saveUserToDatabase(account.getEmail(), account.getDisplayName(), "google");
-                    startActivity(new Intent(LoginActivity.this, HomeActivity.class));
-                    finish();
+                    Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
+                    startActivity(intent);
                 }
             } catch (ApiException e) {
                 Toast.makeText(LoginActivity.this, "Login With Google Failed", Toast.LENGTH_SHORT).show();
@@ -126,8 +126,8 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void onClickSignUp(View view) {
-        startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
-        finish();
+        Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+        startActivity(intent);
     }
 
     private void onClickLogin(View view) {
@@ -152,8 +152,8 @@ public class LoginActivity extends AppCompatActivity {
                     FirebaseUser fu = firebaseAuth.getCurrentUser();
                     assert fu != null;
                     if (fu.isEmailVerified()) {
-                        startActivity(new Intent(LoginActivity.this, HomeActivity.class));
-                        finish();
+                        Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
+                        startActivity(intent);
                     } else {
                         Toast.makeText(LoginActivity.this, "Please verify your email", Toast.LENGTH_SHORT).show();
                     }
@@ -248,8 +248,8 @@ public class LoginActivity extends AppCompatActivity {
                     } else {
                         // Email does not exist, create a new account
                         saveUserToDatabase(email, name, "facebook");
-                        startActivity(new Intent(LoginActivity.this, HomeActivity.class));
-                        finish();
+                        Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
+                        startActivity(intent);
                     }
                 } else {
                     Toast.makeText(LoginActivity.this, "Failed to check email existence", Toast.LENGTH_SHORT).show();

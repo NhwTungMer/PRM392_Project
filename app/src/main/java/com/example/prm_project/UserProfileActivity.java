@@ -74,8 +74,8 @@ public class UserProfileActivity extends AppCompatActivity {
     }
 
     private void redirectGoalScreen(View view) {
-        startActivity(new Intent(UserProfileActivity.this, GoalActivity.class));
-        finish();
+        Intent intent = new Intent(UserProfileActivity.this, GoalActivity.class);
+        startActivity(intent);
     }
 
     private void saveUserName(View view) {
